@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-
 processed_data = "oup_upso_processed.csv"
 
 st.set_page_config(layout="wide", page_title="OUP-UPSO duplication in TRLN")
@@ -11,7 +10,7 @@ st.set_page_config(layout="wide", page_title="OUP-UPSO duplication in TRLN")
 @st.experimental_singleton
 def load_data():
     df = pd.read_csv(
-        processeddir.joinpath(processed_data),
+        processed_data,
         index_col="doi",
         dtype={
             "oa": str,
@@ -22,7 +21,6 @@ def load_data():
         },
     )
     df["upload_year"] = pd.to_datetime(df["upload_date"]).dt.year
-    # df = df.loc[df.upload_year >= 2019]
     drop_cols = [
         "oa",
         "discontinued",
@@ -32,7 +30,6 @@ def load_data():
         "link",
     ]
     df.drop(columns=drop_cols, inplace=True)
-    # df["upload_year"] = df["upload_year"].astype(str)
     return df
 
 
