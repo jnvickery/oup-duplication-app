@@ -48,12 +48,6 @@ year = st.slider(
     value=(2015, max_year),
 )
 
-# year = st.select_slider(
-#     "**What upload years to include**",
-#     options=list(df["upload_year"].unique()),
-#     value=(2015, max_year),
-# )
-
 # filter data to include selected upload years
 df = df.loc[df["upload_year"].between(year[0], year[1], inclusive="both")]
 
