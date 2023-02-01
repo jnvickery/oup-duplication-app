@@ -33,13 +33,13 @@ def load_data():
     return df
 
 
-df = load_data()
+all_df = load_data()
 
 st.header("OUP-UPSO duplication in TRLN")
 
 # slider to select upload year parameters
-min_year = min(df["upload_year"])
-max_year = max(df["upload_year"])
+min_year = min(all_df["upload_year"])
+max_year = max(all_df["upload_year"])
 
 year = st.slider(
     "**What upload years to include**",
@@ -49,14 +49,21 @@ year = st.slider(
 )
 
 # filter data to include selected upload years
-df = df.loc[df["upload_year"].between(year[0], year[1], inclusive="both")]
+df = all_df.loc[all_df["upload_year"].between(year[0], year[1], inclusive="both")]
+
+
+school_list = ["TRLN", "duke", "nccu", "ncsu", "unc"]
+school = st.selectbox(
+    label="**Select a school or all TRLN**", options=school_list, index=0
+)
 
 # first row of barcharts
 row1_1, row1_2 = st.columns(2)
 
-# barchart of upload year by TRLN dup flag
+# barchart of upload year by dup flag
 with row1_1:
-    year_by_dup = pd.crosstab(df["upload_year"], df["TRLN_dup_flag"])
+    # year_by_dup = pd.crosstab(df["upload_year"], df["TRLN_dup_flag"])
+    year_by_dup = pd.crosstab(df["upload_year"], df[f"{school}_dup_flag"])
     year_by_dup.rename(columns={0: "No", 1: "Yes"}, inplace=True)
     year_by_dup.reset_index(inplace=True)
     fig = px.bar(
@@ -87,7 +94,7 @@ with row1_2:
 
 # Top 10 modules with most dups
 top_dup_modules = (
-    df.groupby("module")["TRLN_dup_flag"]
+    df.groupby("module")[f"{school}_dup_flag"]
     .sum()
     .to_frame("Number of dups")
     .sort_values(by="Number of dups", ascending=False)
@@ -105,7 +112,7 @@ st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
 
 # Top 10 press with most dups
 top_dup_press = (
-    df.groupby("press")["TRLN_dup_flag"]
+    df.groupby("press")[f"{school}_dup_flag"]
     .sum()
     .to_frame("Number of dups")
     .sort_values(by="Number of dups", ascending=False)
@@ -123,7 +130,7 @@ st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
 
 # Data table and download option
 st.subheader(
-    "Dataset with duplicate flags and perent duplication per title across schools."
+    "Dataset with duplicate flags and percent duplication per title across schools."
 )
 
 
@@ -132,9 +139,9 @@ def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
 
-csv = convert_df(df)
+csv = convert_df(all_df)
 st.download_button(
-    "Download data as csv",
+    "Download all data as csv",
     csv,
     "TRLN_OUP_duplication.csv",
     "text/csv",
