@@ -4,7 +4,7 @@ import streamlit as st
 
 processed_data = "oup_upso_processed.csv"
 
-st.set_page_config(layout="wide", page_title="OUP-UPSO duplication in TRLN")
+st.set_page_config(page_title="OUP-UPSO duplication in TRLN", layout="wide")
 
 
 @st.experimental_singleton
@@ -18,6 +18,14 @@ def load_data():
             "print_pubdate": int,
             "isbn": str,
             "eisbn": str,
+            "print_ncsu": int,
+            "print_duke": int,
+            "print_nccu": int,
+            "print_unc": int,
+            "online_ncsu": int,
+            "online_duke": int,
+            "online_nccu": int,
+            "online_unc": int,
         },
     )
     df["upload_year"] = pd.to_datetime(df["upload_date"]).dt.year
@@ -30,6 +38,7 @@ def load_data():
         "link",
     ]
     df.drop(columns=drop_cols, inplace=True)
+    df.filter(like="print_", axis=1)
     return df
 
 
@@ -37,32 +46,41 @@ all_df = load_data()
 
 st.header("OUP-UPSO duplication in TRLN")
 
-# slider to select upload year parameters
-min_year = min(all_df["upload_year"])
-max_year = max(all_df["upload_year"])
+row0_0, row0_1, row0_2 = st.columns([1, 3, 1])
 
-year = st.slider(
-    "**What upload years to include**",
-    min_value=min_year,
-    max_value=max_year,
-    value=(2015, max_year),
-)
+with row0_1:
+    # slider to select upload year parameters
+    min_year = min(all_df["upload_year"])
+    max_year = max(all_df["upload_year"])
 
-# filter data to include selected upload years
-df = all_df.loc[all_df["upload_year"].between(year[0], year[1], inclusive="both")]
+    year = st.slider(
+        "**What upload years to include**",
+        min_value=min_year,
+        max_value=max_year,
+        value=(2015, max_year),
+    )
 
+    # filter data to include selected upload years
+    df = all_df.loc[all_df["upload_year"].between(year[0], year[1], inclusive="both")]
 
-school_list = ["TRLN", "duke", "nccu", "ncsu", "unc"]
-school = st.selectbox(
-    label="**Select a school or all TRLN**", options=school_list, index=0
-)
+    # select box for school
+    school_list = ["TRLN", "duke", "nccu", "ncsu", "unc"]
+
+    def upper_school(school):
+        return school.upper()
+
+    school = st.selectbox(
+        label="**Select a school or all TRLN**",
+        options=school_list,
+        index=0,
+        format_func=upper_school,
+    )
 
 # first row of barcharts
 row1_1, row1_2 = st.columns(2)
 
-# barchart of upload year by dup flag
+# barchart of upload year by dup flag for school
 with row1_1:
-    # year_by_dup = pd.crosstab(df["upload_year"], df["TRLN_dup_flag"])
     year_by_dup = pd.crosstab(df["upload_year"], df[f"{school}_dup_flag"])
     year_by_dup.rename(columns={0: "No", 1: "Yes"}, inplace=True)
     year_by_dup.reset_index(inplace=True)
@@ -70,7 +88,7 @@ with row1_1:
         year_by_dup,
         x="upload_year",
         y=["No", "Yes"],
-        title="Dups by Year",
+        title=f"Duplicates by year for {school.upper()}",
         barmode="group",
     )
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)
@@ -87,7 +105,7 @@ with row1_2:
         year_by_dup_pct,
         x="upload_year",
         y="Count",
-        title="Dup pct by Year",
+        title="TRLN duplicate percentage by year",
         color="TRLN_dup_pct",
     )
     st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
@@ -96,16 +114,16 @@ with row1_2:
 top_dup_modules = (
     df.groupby("module")[f"{school}_dup_flag"]
     .sum()
-    .to_frame("Number of dups")
-    .sort_values(by="Number of dups", ascending=False)
+    .to_frame("Number of duplicates")
+    .sort_values(by="Number of duplicates", ascending=False)
     .reset_index()
 )
 fig3 = px.bar(
     top_dup_modules.head(10),
-    x="Number of dups",
+    x="Number of duplicates",
     y="module",
     orientation="h",
-    title="Top 10 modules with the most duplication",
+    title=f"Top 10 modules with the most duplication for {school.upper()}",
 )
 fig3.update_layout(yaxis=dict(autorange="reversed"))
 st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
@@ -114,16 +132,16 @@ st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
 top_dup_press = (
     df.groupby("press")[f"{school}_dup_flag"]
     .sum()
-    .to_frame("Number of dups")
-    .sort_values(by="Number of dups", ascending=False)
+    .to_frame("Number of duplicates")
+    .sort_values(by="Number of duplicates", ascending=False)
     .reset_index()
 )
 fig4 = px.bar(
     top_dup_press.head(10),
-    x="Number of dups",
+    x="Number of duplicates",
     y="press",
     orientation="h",
-    title="Top 10 presses with the most duplication",
+    title=f"Top 10 presses with the most duplication for {school.upper()}",
 )
 fig4.update_layout(yaxis=dict(autorange="reversed"))
 st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
