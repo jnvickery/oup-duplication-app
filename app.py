@@ -4,7 +4,11 @@ import streamlit as st
 
 processed_data = "oup_upso_processed.csv"
 
-st.set_page_config(page_title="OUP-UPSO duplication in TRLN", layout="wide")
+st.set_page_config(
+    page_title="OUP-UPSO duplication in TRLN",
+    layout="wide",
+    menu_items={"About": "https://github.com/jnvickery/oup-duplication-app"},
+)
 
 
 @st.experimental_singleton
