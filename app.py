@@ -235,7 +235,7 @@ try:
 
     with row3_2:
         if school == "TRLN":
-            no_copies = df[cols2keep]
+            no_copies = df[cols2keep].copy()
             no_copies["print_total"] = no_copies.filter(regex="print_").sum(axis=1)
             no_copies["ebook_total"] = no_copies.filter(regex="online_").sum(axis=1)
             no_copies = no_copies.loc[
