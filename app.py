@@ -240,7 +240,7 @@ try:
             no_copies["ebook_total"] = no_copies.filter(regex="online_").sum(axis=1)
             no_copies = no_copies.loc[
                 (no_copies["print_total"] == 0) & (no_copies["ebook_total"] == 0)
-            ]
+            ].copy()
         else:
             no_copies = df.loc[
                 (df[f"print_{school}"] == 0) & (df[f"online_{school}"] == 0)
