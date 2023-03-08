@@ -43,7 +43,6 @@ def load_data():
         "link",
     ]
     df.drop(columns=drop_cols, inplace=True)
-    # df.filter(like="print_", axis=1)
     return df
 
 
@@ -66,7 +65,9 @@ with row0_1:
     )
 
     # filter data to include selected upload years
-    df = all_df.loc[all_df["upload_year"].between(year[0], year[1], inclusive="both")]
+    df = all_df.loc[
+        all_df["upload_year"].between(year[0], year[1], inclusive="both")
+    ].copy()
 
     # select box for school
     school_list = ["TRLN", "duke", "nccu", "ncsu", "unc"]
@@ -96,6 +97,11 @@ try:
             y=["No", "Yes"],
             title=f"Duplicates by year for {school.upper()}",
             barmode="group",
+            labels={
+                "upload_year": "OUP-UPSO collection year",
+                "value": "Count",
+                "variable": "Duplicated",
+            },
         )
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
@@ -113,6 +119,10 @@ try:
             y="Count",
             title="TRLN duplicate percentage by year",
             color="TRLN_dup_pct",
+            labels={
+                "upload_year": "OUP-UPSO collection year",
+                "TRLN_dup_pct": r"% TRLN with dups",
+            },
         )
         st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
 
@@ -134,6 +144,9 @@ try:
             y="module",
             orientation="h",
             title=f"Top 10 modules with the most duplication for {school.upper()}",
+            labels={
+                "module": "OUP-UPSO Module",
+            },
         )
         fig3.update_layout(yaxis=dict(autorange="reversed"))
         st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
@@ -153,6 +166,7 @@ try:
             y="press",
             orientation="h",
             title=f"Top 10 presses with the most duplication for {school.upper()}",
+            labels={"press": "Press"},
         )
         fig4.update_layout(yaxis=dict(autorange="reversed"))
         st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
@@ -215,6 +229,7 @@ try:
             color="dup_format",
             title=f"Duplicates by format and year for {school.upper()}",
             barmode="group",
+            labels={"upload_year": "OUP-UPSO collection year", "dup_format": "Format"},
         )
         st.plotly_chart(fig5, theme="streamlit", use_container_width=True)
 
@@ -237,6 +252,7 @@ try:
             x="upload_year",
             y="num_missing",
             title=f"Number of titles missing per upload year for {school.upper()}",
+            labels={"upload_year": "OUP-UPSO collection year", "num_missing": "Count"},
         )
         st.plotly_chart(fig6, theme="streamlit", use_container_width=True)
 except ValueError:
@@ -250,7 +266,7 @@ except ValueError:
 
 # Data table and download option
 st.subheader(
-    "Dataset with duplicate flags and percent duplication per title across schools."
+    "Dataset with duplicate flags and percent duplication per title across schools"
 )
 
 
@@ -281,7 +297,7 @@ df["TRLN_dup_pct"] = (df["TRLN_dup_pct"] * 100).map("{:,.0f}%".format)
 display_df = df.rename(
     columns={
         "title": "Title",
-        "module": "OUP Module",
+        "module": "OUP-UPSO Module",
         "print_pubdate": "Print pub. year",
         "isbn": "ISBN",
         "eisbn": "EISBN",
