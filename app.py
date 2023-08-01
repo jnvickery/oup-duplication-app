@@ -11,7 +11,8 @@ st.set_page_config(
 )
 
 
-@st.experimental_singleton
+# @st.experimental_singleton
+@st.cache_data
 def load_data():
     df = pd.read_csv(
         processed_data,
@@ -110,16 +111,18 @@ try:
         year_by_dup_pct = pd.DataFrame(
             df[["upload_year", "TRLN_dup_pct"]].value_counts().reset_index()
         )
-        year_by_dup_pct.rename(columns={0: "Count"}, inplace=True)
-        year_by_dup_pct.sort_values(by=["upload_year", "TRLN_dup_pct"])
+        # year_by_dup_pct.rename(columns={0: "Count"}, axis=1, inplace=True)
+        year_by_dup_pct.sort_values(by=["upload_year", "TRLN_dup_pct"], inplace=True)
         year_by_dup_pct["TRLN_dup_pct"] = year_by_dup_pct["TRLN_dup_pct"].astype(str)
+        # st.dataframe(year_by_dup_pct.head())
         fig1 = px.bar(
             year_by_dup_pct,
             x="upload_year",
-            y="Count",
+            y="count",
             title="TRLN duplicate percentage by year",
             color="TRLN_dup_pct",
             labels={
+                "count": "Count",
                 "upload_year": "OUP-UPSO collection year",
                 "TRLN_dup_pct": r"% TRLN with dups",
             },
@@ -270,7 +273,8 @@ st.subheader(
 )
 
 
-@st.experimental_memo
+# @st.experimental_memo
+@st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode("utf-8")
 
